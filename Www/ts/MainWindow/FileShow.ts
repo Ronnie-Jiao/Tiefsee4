@@ -546,8 +546,29 @@ export class FileShow {
             const configType = configItem.type;
 
             if (configType == "pdf") {
-                setShowType(GroupType.pdf); // 改變顯示類型
-                _iframes.pdfview.loadFile(fileInfo2);
+                setShowType(GroupType.pdf);
+                if (Lib.getExtension(path).toLocaleLowerCase() === ".ai") {
+                    // Do not pass raw PostScript/native AI bytes to a PDF viewer.
+                    // The status call also obtains a genuine bitmap fallback if available.
+                    const revision = viewLoadRevision;
+                    _iframes.pdfview.loadNone();
+                    let preview: { kind: "pdf" | "preview" | "unsupported"; path?: string };
+                    try {
+                        preview = await WebAPI.getIllustratorPreviewStatus(fileInfo2);
+                    } catch (error) {
+                        console.warn("Illustrator preview detection failed", error);
+                        preview = { kind: "unsupported" };
+                    }
+                    if (revision !== viewLoadRevision) return; // user navigated away
+                    if (preview.kind === "pdf") {
+                        _iframes.pdfview.loadFile(fileInfo2);
+                    } else {
+                        _iframes.pdfview.loadIllustratorFallback(
+                            preview.kind === "preview" && preview.path ? preview.path : null);
+                    }
+                } else {
+                    _iframes.pdfview.loadFile(fileInfo2);
+                }
             }
 
             if (configType == "PDFTronWebviewer") {
