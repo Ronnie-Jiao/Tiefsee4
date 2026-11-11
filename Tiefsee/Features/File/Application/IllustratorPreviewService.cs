@@ -131,10 +131,6 @@ public static class IllustratorPreviewService {
                 Marshal.Copy(bgr, 0, IntPtr.Add(bits.Scan0, y * bits.Stride), bgr.Length);
             }
         }
-        catch {
-            bitmap.Dispose();
-            throw;
-        }
         finally {
             bitmap.UnlockBits(bits);
         }
