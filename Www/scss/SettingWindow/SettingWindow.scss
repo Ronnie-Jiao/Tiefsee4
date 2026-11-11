@@ -1,5 +1,7 @@
 @use "../BaseWindow";
 @use "../Msgbox";
+@use "../VisualFoundation" as foundation;
+@use "./VisualRefresh" as refresh;
 
 :root {
     --color-primary: rgb(10, 178, 255);
@@ -1344,3 +1346,7 @@ body[showType="storeApp"] [show-not="storeApp"] {
 .minicolors-theme-default .minicolors-input {
     padding-left: 33px;
 }
+
+// Visual refresh is emitted last to override legacy component styling.
+@include foundation.styles;
+@include refresh.styles;

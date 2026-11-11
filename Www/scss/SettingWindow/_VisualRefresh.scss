@@ -1,0 +1,344 @@
+// Settings window: calm sidebar navigation and structured, accessible controls.
+// Visual-only overrides: all existing setting IDs, bindings and behaviors remain.
+@mixin styles {
+    .window {
+        border-radius: var(--window-border-radius);
+        background-color: var(--color-window-background);
+    }
+    .window-left {
+        border-right: 1px solid var(--ui-outline);
+        background: linear-gradient(165deg, var(--ui-surface-raised), var(--ui-surface-soft));
+    }
+    .window-right {
+        min-width: 0;
+        background: var(--color-window-background);
+    }
+    .window-right .window-titlebar {
+        background: var(--ui-surface-soft);
+    }
+    .pagetab {
+        padding: 14px 9px 20px;
+    }
+    .pagetab .page-tabsBtn {
+        margin: 3px 0;
+        padding: 0 14px 0 17px;
+        min-height: 40px;
+        height: 40px;
+        line-height: 40px;
+        border: 1px solid transparent;
+        border-radius: var(--ui-radius-sm);
+        color: var(--color-white80);
+        font-size: 13px;
+        font-weight: 500;
+        transition: color var(--ui-duration), background var(--ui-duration),
+            border-color var(--ui-duration);
+    }
+    .pagetab .page-tabsBtn:hover {
+        background: var(--ui-surface-raised);
+        border-color: var(--ui-outline);
+        color: var(--color-white);
+    }
+    .pagetab .page-tabsBtn[active="true"] {
+        background: var(--ui-highlight);
+        border-color: var(--color-blue40);
+        color: var(--color-white);
+        font-weight: 650;
+    }
+    .pagetab .page-tabsBtn[active="true"]::after {
+        left: 6px;
+        top: 9px;
+        bottom: 9px;
+        width: 3px;
+        border-radius: 999px;
+        background: var(--color-blue);
+    }
+    .pagetab .page-tabsHr {
+        background: var(--ui-outline);
+        margin: 12px 9px;
+    }
+
+    .logobox {
+        margin: 12px 14px 20px;
+        gap: 8px;
+    }
+    .logobox .logobox-img {
+        width: 40px;
+        margin-right: 0;
+        filter: drop-shadow(0 3px 9px rgba(0, 0, 0, .18));
+    }
+    .logobox .logobox-text-title {
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: -.01em;
+    }
+    .logobox .logobox-text-subtitle {
+        font-size: 11px;
+        color: var(--ui-muted);
+        margin-top: 3px;
+    }
+
+    // Give pages room to breathe; retain the original show/hide tab mechanism.
+    .page-tabsPage {
+        max-width: 880px;
+        padding: 22px 28px 44px;
+    }
+    .page-title {
+        margin: 0 0 22px;
+        font-size: 23px;
+        font-weight: 670;
+        line-height: 1.3;
+        letter-spacing: -.025em;
+    }
+    .page-hr {
+        background: var(--ui-outline);
+        margin: 16px 0;
+    }
+    .settings-pageIntro {
+        margin-bottom: 22px;
+    }
+    .settings-pageTips {
+        background: var(--ui-surface);
+        border-color: var(--ui-outline);
+        border-left: 3px solid var(--color-blue60);
+        border-radius: var(--ui-radius-md);
+        padding: 14px 16px;
+        line-height: 1.6;
+    }
+    .settings-pageTip__title {
+        font-size: 13px;
+        font-weight: 650;
+    }
+    .settings-pageFooter {
+        padding-top: 18px;
+        margin-top: 22px;
+        border-top-color: var(--ui-outline);
+    }
+
+    // Individual configuration groups become soft, readable surfaces.
+    .page-tabsPage > .box {
+        margin-bottom: 18px;
+        padding: 19px 20px;
+        border: 1px solid var(--ui-outline);
+        border-radius: var(--ui-radius-lg);
+        background: var(--ui-surface-soft);
+    }
+    .box .box-title {
+        margin: 0 0 14px;
+        font-size: 16px;
+        font-weight: 650;
+        letter-spacing: -.01em;
+        line-height: 1.4;
+    }
+    .box .text-title {
+        margin-top: 14px;
+        margin-bottom: 6px;
+        line-height: 1.45;
+        font-size: 13px;
+        font-weight: 550;
+    }
+    .box .text-title__60,
+    .settings-pageTip__sub,
+    .pluginLiet-text {
+        color: var(--ui-muted);
+    }
+    .box .settings-groupTitle {
+        margin-bottom: 6px;
+        min-height: 38px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .box .settings-option {
+        padding: 12px 0;
+        border-bottom-color: var(--ui-outline);
+    }
+    .box .settings-optionTitle {
+        margin-bottom: 8px;
+        line-height: 1.5;
+        font-size: 13px;
+    }
+    .box .collapseBox {
+        border-left: 2px solid var(--ui-highlight-strong);
+        margin-left: 10px;
+        padding-left: 16px;
+    }
+
+    // Inputs/selects/buttons should clearly communicate hover, focus and disabled states.
+    .text-input,
+    .msgbox-input,
+    .box .hotkey .hotkey-input,
+    .box .hotkey .hotkey-subInput,
+    .toolbar-customizer select,
+    .menu-bulkView-select {
+        color: var(--color-white);
+        background: var(--ui-surface);
+        border: 1px solid var(--ui-outline-strong);
+        border-radius: var(--ui-radius-sm);
+        min-height: 38px;
+        padding: 0 11px;
+        box-shadow: inset 0 1px rgba(255, 255, 255, .025);
+        transition: border-color var(--ui-duration), background var(--ui-duration),
+            box-shadow var(--ui-duration);
+    }
+    :is(.text-input, .box .hotkey .hotkey-input, .box .hotkey .hotkey-subInput,
+        .toolbar-customizer select):hover:not(:disabled) {
+        border-color: var(--color-blue40);
+    }
+    :is(.text-input, .box .hotkey .hotkey-input, .box .hotkey .hotkey-subInput,
+        .toolbar-customizer select):focus-visible {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 1px;
+        box-shadow: 0 0 0 3px var(--ui-highlight);
+    }
+    :is(.text-input, .btn, select):disabled {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+    .btn {
+        min-height: 37px;
+        height: auto;
+        padding: 8px 13px;
+        border: 1px solid var(--ui-outline);
+        border-radius: var(--ui-radius-sm);
+        color: var(--color-white);
+        background: var(--ui-surface-raised);
+        font-weight: 550;
+        line-height: 1.35;
+        transition: background var(--ui-duration), border-color var(--ui-duration),
+            transform var(--ui-duration);
+    }
+    .btn:hover {
+        background: var(--ui-surface-hover);
+        border-color: var(--ui-outline-strong);
+    }
+    .btn:active {
+        transform: scale(.98);
+    }
+
+    .switch {
+        width: 48px;
+        height: 26px;
+    }
+    .switch .slider {
+        border-color: var(--ui-outline-strong);
+        background: var(--ui-surface-raised);
+        transition: background-color var(--ui-duration), border-color var(--ui-duration);
+    }
+    .switch .slider::before {
+        width: 16px;
+        height: 16px;
+        left: 4px;
+        background: var(--color-white80);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+    }
+    .switch input:checked + .slider {
+        background: var(--color-blue);
+        border-color: var(--color-blue);
+    }
+    .switch input:checked + .slider::before {
+        background: white;
+        transform: translateX(22px);
+    }
+    .switch input:focus-visible + .slider {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 3px;
+    }
+
+    .pluginLiet {
+        max-width: none;
+        padding: 12px 16px;
+        background: var(--ui-surface);
+        border-color: var(--ui-outline);
+        border-radius: var(--ui-radius-md);
+    }
+    .pluginLiet .pluginLiet-item {
+        padding: 11px 0;
+        margin: 0;
+        border-bottom-color: var(--ui-outline);
+    }
+    .pluginLiet .pluginLiet-title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+    .pluginLiet .pluginLiet-R {
+        border-left-color: var(--ui-outline);
+    }
+
+    // Hotkeys and toolbar customization should feel part of the same design.
+    .box .hotkey {
+        border-bottom-color: var(--ui-outline);
+        padding: 13px 0;
+    }
+    .box .hotkey .hotkey-title {
+        font-size: 13px;
+    }
+    .box .hotkey .hotkey-content {
+        background: var(--ui-surface);
+        border-color: var(--ui-outline);
+        border-radius: var(--ui-radius-md);
+        box-shadow: none;
+    }
+    .box .hotkey .hotkey-subLabel {
+        color: var(--ui-muted);
+        font-size: 11px;
+    }
+    .box .hotkey .hotkey-iconBtn {
+        opacity: .8;
+        border-radius: var(--ui-radius-xs);
+        background: var(--ui-surface-raised);
+    }
+    .box .hotkey .hotkey-iconBtn:hover {
+        opacity: 1;
+    }
+    .toolbar-preview-window {
+        border-color: var(--ui-outline-strong);
+        border-radius: var(--ui-radius-md);
+        background: var(--ui-surface);
+        box-shadow: var(--ui-shadow-soft);
+    }
+    .toolbar-preview-toolbar {
+        border-top: 1px solid var(--ui-outline);
+        background: var(--ui-surface-soft);
+    }
+    .toolbar-preview-align,
+    .toolbar-dropzone {
+        border-color: var(--ui-outline);
+        background: var(--ui-surface);
+        border-radius: var(--ui-radius-xs);
+    }
+    .toolbar-preview-item,
+    .toolbarList .toolbarList-item {
+        border-radius: var(--ui-radius-xs);
+    }
+    .toolbar-customizer-available,
+    .toolbar-customizer-footer {
+        border-color: var(--ui-outline);
+    }
+    .tippy-box[data-theme~="tippyMyTheme"] {
+        background: var(--ui-surface);
+        border-color: var(--ui-outline-strong);
+        border-radius: var(--ui-radius-md);
+        box-shadow: var(--ui-shadow);
+    }
+
+    @media (max-width: 760px) {
+        .page-tabsPage {
+            padding: 18px 16px 30px;
+        }
+        .page-tabsPage > .box {
+            padding: 14px 13px;
+        }
+        .page-title {
+            font-size: 20px;
+        }
+        .pagetab .page-tabsBtn {
+            min-width: 125px;
+            padding-left: 13px;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .pagetab .page-tabsBtn,
+        .text-input, .btn, .switch .slider {
+            transition: none;
+        }
+    }
+}

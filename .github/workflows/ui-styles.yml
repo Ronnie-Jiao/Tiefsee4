@@ -1,0 +1,35 @@
+name: Validate UI styles
+
+on:
+  push:
+    branches:
+      - feature/ui-refresh
+  pull_request:
+    paths:
+      - 'Www/scss/**'
+      - 'Www/package.json'
+      - 'Www/package-lock.json'
+      - '.github/workflows/ui-styles.yml'
+
+jobs:
+  sass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Www/package-lock.json
+      - name: Install locked frontend dependencies
+        working-directory: Www
+        run: npm ci
+      - name: Compile both application stylesheets
+        working-directory: Www
+        run: |
+          mkdir -p /tmp/tiefsee-ui-css
+          ./node_modules/.bin/sass --no-source-map scss/MainWindow/MainWindow.scss /tmp/tiefsee-ui-css/MainWindow.css
+          ./node_modules/.bin/sass --no-source-map scss/SettingWindow/SettingWindow.scss /tmp/tiefsee-ui-css/SettingWindow.css
+          test -s /tmp/tiefsee-ui-css/MainWindow.css
+          test -s /tmp/tiefsee-ui-css/SettingWindow.css

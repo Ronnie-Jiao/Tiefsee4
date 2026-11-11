@@ -1,0 +1,320 @@
+// Main viewer polish. Overlay the existing layout rules without changing their geometry.
+// Keep active/hidden attributes, drag regions, menu wiring and renderer nodes untouched.
+@mixin styles {
+    .main-content {
+        background: var(--ui-surface-soft);
+    }
+    .main-C {
+        background-color: var(--color-window-background);
+    }
+    .main-V {
+        min-width: 0;
+        background:
+            radial-gradient(ellipse 62% 70% at 52% 42%,
+                color-mix(in srgb, var(--color-white) 3%, transparent) 0%,
+                transparent 100%),
+            var(--color-window-background);
+        box-shadow: inset 0 1px 0 var(--ui-outline);
+    }
+
+    // Compact studio-style command bar.
+    .main-T {
+        z-index: 11;
+        background: var(--ui-surface-soft);
+        border-bottom: 1px solid var(--ui-outline);
+    }
+    .main-toolbar {
+        height: 42px;
+        margin-bottom: 0;
+        padding: 4px 6px;
+        font-size: 13px;
+    }
+    .main-toolbar-group {
+        margin-bottom: 0;
+    }
+    .main-toolbar-alignment {
+        height: 34px;
+        gap: 2px;
+    }
+    .main-toolbar-btn {
+        border: 1px solid transparent;
+        border-radius: var(--ui-radius-sm);
+        transition:
+            background-color var(--ui-duration) ease,
+            border-color var(--ui-duration) ease,
+            transform var(--ui-duration) var(--ui-ease);
+    }
+    .main-toolbar-btn:hover,
+    .titlebar-custom-item.main-toolbar-btn:hover {
+        border-color: var(--ui-outline);
+        background: var(--ui-surface-raised);
+    }
+    .main-toolbar-btn:active {
+        transform: scale(.94);
+        background: var(--ui-highlight);
+    }
+    .main-toolbar-btn.menuActive,
+    .titlebar-toolbar-btn.menuActive {
+        color: var(--color-blue);
+        background: var(--ui-highlight) !important;
+        border-color: var(--color-blue40);
+    }
+    .main-toolbar-txt {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-white80);
+        padding: 0 7px;
+    }
+    .main-toolbar-hr,
+    .titlebar-custom-item.main-toolbar-hr {
+        height: 18px;
+        margin: 0 6px;
+        background: var(--ui-outline-strong);
+    }
+    .main-toolbar-spacer {
+        width: 10px;
+        min-width: 10px;
+        flex-basis: 10px;
+    }
+    .titlebar-custom-item.main-toolbar-btn {
+        border-radius: 7px;
+        height: 27px;
+        min-width: 31px;
+        width: 31px;
+    }
+    .titlebar-custom-item.main-toolbar-txt {
+        font-size: 12px;
+        color: var(--color-white80);
+    }
+
+    // Subtle depth separates the work canvas from browsing trays.
+    .main-fileList,
+    .main-dirList,
+    .mainExif {
+        background: var(--ui-surface-soft);
+        border-color: var(--ui-outline);
+    }
+    .main-fileList,
+    .main-dirList {
+        box-shadow: inset -1px 0 var(--ui-outline);
+    }
+    .main-fileList .main-fileListBody,
+    .main-dirList .main-dirListBody {
+        padding-top: 9px;
+    }
+    .main-fileList .fileList-item,
+    .main-dirList .dirList-item {
+        margin-bottom: 10px;
+        transition: transform var(--ui-duration) var(--ui-ease);
+    }
+    .main-fileList .fileList-item::before,
+    .main-dirList .dirList-item::before {
+        border: 1px solid transparent;
+        background: transparent;
+        border-radius: var(--ui-radius-md);
+        transition: background-color var(--ui-duration), border-color var(--ui-duration),
+            box-shadow var(--ui-duration);
+    }
+    .main-fileList .fileList-item:hover::before,
+    .main-dirList .dirList-item:hover::before {
+        border-color: var(--ui-outline-strong);
+        background: var(--color-white10);
+    }
+    .main-fileList .fileList-item[active="true"]::before,
+    .main-dirList .dirList-item[active="true"]::before {
+        border: 1.5px solid var(--color-blue);
+        background: var(--ui-highlight);
+        box-shadow: inset 0 0 0 1px var(--ui-highlight), 0 0 0 2px var(--color-blue20);
+    }
+    .main-fileList .fileList-img,
+    .main-dirList .dirList-img {
+        border-radius: var(--ui-radius-sm);
+        background-color: var(--ui-surface-raised);
+        box-shadow: inset 0 0 0 1px var(--ui-outline);
+    }
+    .main-fileList .fileList-img img,
+    .main-dirList .dirList-img img {
+        object-fit: contain;
+    }
+    .main-fileList .fileList-title,
+    .main-dirList .dirList-title {
+        margin-top: 5px;
+        font-size: 12px;
+        line-height: 17px;
+    }
+    .main-fileList .fileList-name,
+    .main-dirList .dirList-name {
+        color: var(--color-white80);
+        line-height: 17px;
+        height: 17px;
+    }
+    .main-fileList .fileList-no,
+    .main-dirList .dirList-no {
+        color: var(--color-blue);
+        line-height: 17px;
+        height: 17px;
+        font-size: 11px;
+    }
+
+    // Metadata reads as a clear label/value system.
+    .mainExif {
+        box-shadow: inset 1px 0 var(--ui-outline);
+    }
+    .mainExif .mainExifTop {
+        border-bottom: 1px solid var(--ui-outline);
+    }
+    .mainExif .mainExifTop .mainExifTabs {
+        height: 43px;
+        margin-bottom: 0;
+    }
+    .mainExif .mainExifTop .mainExifTabs::before {
+        background: var(--ui-outline);
+        bottom: 0;
+    }
+    .mainExif .mainExifTop .mainExifTabs .mainExifTabsItem {
+        min-height: 39px;
+        height: 39px;
+        padding: 0 12px;
+        border-radius: var(--ui-radius-sm) var(--ui-radius-sm) 0 0;
+        transition: background-color var(--ui-duration);
+    }
+    .mainExif .mainExifTop .mainExifTabs .mainExifTabsItem[active="true"] {
+        color: var(--color-blue);
+        background: var(--ui-highlight);
+    }
+    .mainExif .mainExifTop .mainExifTabs .mainExifTabsItem[active="true"]::after {
+        height: 2px;
+        border-radius: 2px;
+    }
+    .mainExif .mainExifList,
+    .mainExif .mainExifRelated {
+        padding: 12px 12px 18px;
+    }
+    .mainExif .mainExifItem {
+        padding: 9px 2px;
+        line-height: 1.45;
+    }
+    .mainExif .mainExifItem::before {
+        background: var(--ui-outline);
+        right: 0;
+    }
+    .mainExif .mainExifName {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ui-muted);
+    }
+    .mainExif .mainExifValue {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    .mainExif .mainExifRelatedTitle {
+        color: var(--color-white);
+        background: var(--ui-surface);
+        border-color: var(--ui-outline);
+        border-radius: var(--ui-radius-sm);
+        padding: 9px;
+        margin-bottom: 9px;
+        transition: background var(--ui-duration);
+    }
+    .mainExif .mainExifRelatedTitle:hover {
+        background: var(--ui-surface-raised);
+    }
+    .mainExif .mainExifRelatedTitleBtn {
+        border-color: var(--ui-outline);
+        border-radius: var(--ui-radius-xs);
+        background: var(--ui-surface);
+    }
+
+    // Consistent floating controls / navigation.
+    .largeBtn .box {
+        border-color: var(--ui-outline-strong);
+        border-radius: var(--ui-radius-md);
+        background: var(--ui-surface-raised);
+        box-shadow: var(--ui-shadow-soft);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+        transition: background var(--ui-duration), border-color var(--ui-duration);
+    }
+    .largeBtn:hover .box {
+        background: var(--ui-surface-hover);
+        border-color: var(--color-blue40);
+    }
+    .dragbar-v:hover,
+    .dragbar-v[active="true"] {
+        background: var(--color-blue60);
+        border-radius: 999px;
+    }
+    .favorites-panel {
+        border-color: var(--ui-outline-strong);
+        border-radius: var(--ui-radius-xl);
+        box-shadow: var(--ui-shadow);
+    }
+    .favorites-header {
+        border-bottom-color: var(--ui-outline);
+    }
+    .favorites-title {
+        font-weight: 600;
+        font-size: 17px;
+    }
+    .favorite-tile {
+        border-color: var(--ui-outline);
+        border-radius: var(--ui-radius-md);
+        background: var(--ui-surface-soft);
+    }
+    .favorite-tile:hover {
+        border-color: var(--color-blue40);
+        background: var(--ui-surface-raised);
+    }
+    .favorite-tile:focus-visible,
+    .favorites-panel button:focus-visible {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 2px;
+    }
+
+    .video-toolbar-button,
+    .video-toolbar-volume-group,
+    .video-toolbar-time {
+        border-color: var(--ui-outline-strong);
+        background-color: var(--ui-surface-raised);
+        box-shadow: var(--ui-shadow-soft);
+    }
+    .video-toolbar-button:hover {
+        background-color: var(--ui-surface-hover);
+    }
+
+    // A calmer, more intentional first-run / empty state.
+    .mView-welcome {
+        background: radial-gradient(circle at 50% 44%, var(--ui-highlight), transparent 52%);
+    }
+    .mView-welcome .mView-welcome-logo {
+        max-width: 136px;
+        margin-bottom: 24px;
+        filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .2));
+    }
+    .mView-welcome .mView-welcome-text {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.7;
+        letter-spacing: .02em;
+        color: var(--color-white80);
+    }
+
+    // Fullscreen's legacy hidden offset assumes a shorter toolbar.
+    // Keep the enlarged toolbar fully off-screen until hover reveals it.
+    body[fullScreen="true"] .main-T {
+        top: -48px;
+    }
+    body[fullScreen="true"][showTitlebar="true"] .main-T {
+        top: 30px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .main-toolbar-btn,
+        .main-fileList .fileList-item,
+        .main-dirList .dirList-item,
+        .main-fileList .fileList-item::before,
+        .main-dirList .dirList-item::before {
+            transition: none;
+        }
+    }
+}

@@ -268,8 +268,8 @@ export class Lib {
             return "ogv";
         }
 
-        if (hex.indexOf("38 42 50 53") === 0) { // 38(8) 42(B) 50(P) 53(S)
-            return "psd";
+        if (hex.indexOf("38 42 50 53") === 0) { // 8BPS: both Photoshop formats use this signature
+            return hex.indexOf("38 42 50 53 00 02") === 0 ? "psb" : "psd";
         }
 
         return fileExt;
