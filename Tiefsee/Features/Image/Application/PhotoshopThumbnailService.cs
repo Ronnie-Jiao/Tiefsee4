@@ -80,13 +80,13 @@ public static class PhotoshopThumbnailService {
 
     private static ushort ReadUInt16(BinaryReader reader) {
         Span<byte> data = stackalloc byte[2];
-        reader.ReadExactly(data);
+        reader.BaseStream.ReadExactly(data);
         return BinaryPrimitives.ReadUInt16BigEndian(data);
     }
 
     private static uint ReadUInt32(BinaryReader reader) {
         Span<byte> data = stackalloc byte[4];
-        reader.ReadExactly(data);
+        reader.BaseStream.ReadExactly(data);
         return BinaryPrimitives.ReadUInt32BigEndian(data);
     }
 }
