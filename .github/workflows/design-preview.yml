@@ -1,0 +1,39 @@
+name: Validate design previews
+
+on:
+  push:
+    branches:
+      - feature/ai-preview-compat
+  pull_request:
+    paths:
+      - 'Tiefsee/Features/File/**'
+      - 'Tiefsee/Features/Image/**'
+      - 'Www/ts/**'
+      - 'Tests/DesignFilePreviewTests/**'
+      - '.github/workflows/design-preview.yml'
+
+jobs:
+  design-preview:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Www/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: Www
+        run: npm ci
+      - name: Typecheck frontend code
+        working-directory: Www
+        run: npx tsc --noEmit
+      - name: Build C# viewer without native launcher
+        run: dotnet build Tiefsee/Tiefsee.csproj -c Release -p:BuildNativeHost=false
+      - name: Run isolated header-parser regression checks
+        run: dotnet run --project Tests/DesignFilePreviewTests/DesignFilePreviewTests.csproj -c Release

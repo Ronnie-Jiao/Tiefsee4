@@ -54,6 +54,7 @@ public sealed class FileHttpEndpoints : HttpEndpointModuleBase {
         HttpEndpointRegistrar.Map(WebServer, "/api/files/video", GetVideo);
         HttpEndpointRegistrar.Map(WebServer, "/api/files/content", GetFile);
         HttpEndpointRegistrar.Map(WebServer, "/api/files/pdf", GetPdf);
+        HttpEndpointRegistrar.Map(WebServer, "/api/files/ai-preview-status", GetIllustratorPreviewStatus);
         HttpEndpointRegistrar.Map(WebServer, "/api/files/text", GetText);
     }
 
@@ -188,6 +189,35 @@ public sealed class FileHttpEndpoints : HttpEndpointModuleBase {
             if (state.ActiveRequests == 0) {
                 _streamingRequests.Remove(key);
             }
+        }
+    }
+
+    /// <summary>
+    /// Return the actual preview capability of an Illustrator document.
+    /// Never substitute a generic file icon for missing PDF/artwork data.
+    /// </summary>
+    private async Task GetIllustratorPreviewStatus(RequestData d) {
+        string path = Uri.UnescapeDataString(d.args["path"]);
+        if (!Path.GetExtension(path).Equals(".ai", StringComparison.OrdinalIgnoreCase)) {
+            await WriteError(d, 400, "Expected an Illustrator .ai file.");
+            return;
+        }
+        if (await CheckFileExist(d, path) == false) return;
+        if (HeadersAdd304(d, path)) return;
+
+        if (IllustratorPreviewService.HasPdfCompatibleContent(path)) {
+            await WriteJson(d, new { kind = "pdf" });
+            return;
+        }
+
+        // EPSI is extracted without executing PostScript. Windows Shell is a
+        // fallback only when it provides a genuine ThumbnailOnly bitmap.
+        string previewPath = _imageProcessingService.GetIllustratorPreviewPath(path);
+        if (previewPath != null) {
+            await WriteJson(d, new { kind = "preview", path = previewPath });
+        }
+        else {
+            await WriteJson(d, new { kind = "unsupported" });
         }
     }
 

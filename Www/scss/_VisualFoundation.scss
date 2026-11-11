@@ -1,0 +1,192 @@
+// Shared visual language for the main and settings WebView windows.
+// Kept additive so runtime theme / custom accent variables remain authoritative.
+@mixin styles {
+    :root {
+        --ui-radius-xs: 6px;
+        --ui-radius-sm: 9px;
+        --ui-radius-md: 13px;
+        --ui-radius-lg: 18px;
+        --ui-radius-xl: 22px;
+        --ui-duration: 160ms;
+        --ui-ease: cubic-bezier(.22, .75, .28, 1);
+        --ui-surface: color-mix(in srgb, var(--color-window-background) 90%, var(--color-white) 10%);
+        --ui-surface-soft: color-mix(in srgb, var(--color-window-background) 94%, var(--color-white) 6%);
+        --ui-surface-raised: color-mix(in srgb, var(--color-window-background) 83%, var(--color-white) 17%);
+        --ui-surface-hover: color-mix(in srgb, var(--color-window-background) 78%, var(--color-white) 22%);
+        --ui-outline: color-mix(in srgb, var(--color-white) 13%, transparent);
+        --ui-outline-strong: color-mix(in srgb, var(--color-white) 24%, transparent);
+        --ui-muted: var(--color-white60);
+        --ui-highlight: color-mix(in srgb, var(--color-blue) 17%, transparent);
+        --ui-highlight-strong: color-mix(in srgb, var(--color-blue) 28%, transparent);
+        --ui-shadow: 0 14px 42px rgba(0, 0, 0, .24), 0 3px 10px rgba(0, 0, 0, .14);
+        --ui-shadow-soft: 0 4px 16px rgba(0, 0, 0, .14);
+    }
+
+    body, button, input, textarea, select, option, optgroup {
+        font-family: "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", "Microsoft JhengHei UI", sans-serif;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+        color: var(--color-white);
+    }
+
+    // Keep the native drag-region behavior and close/minimize hit targets intact.
+    .window {
+        box-shadow: 0 22px 72px rgba(0, 0, 0, .19);
+    }
+    .window.maximized, .window.windowRoundedCorners {
+        box-shadow: none;
+    }
+    .window-titlebar {
+        background: linear-gradient(180deg, var(--ui-surface-soft), transparent);
+        box-shadow: inset 0 -1px var(--ui-outline);
+    }
+    .window-titlebar .titlebar-text {
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: .01em;
+        color: var(--color-white80);
+    }
+    .window-titlebar .titlebar-toolbar-btn {
+        transition: background-color var(--ui-duration) ease;
+    }
+    .window-titlebar .titlebar-toolbar-btn:hover {
+        background-color: var(--ui-surface-hover);
+    }
+    .window-titlebar .titlebar-toolbar-close:hover {
+        background-color: #ca4654;
+    }
+
+    // A consistent and visible keyboard focus, without altering mouse clicks.
+    :is(button, input, textarea, select, .main-toolbar-btn, .titlebar-toolbar-btn,
+        .menu-hor-item, .menu-grid-item, .msgbox-btn, .base-checkbox, .base-radio):focus-visible {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 2px;
+    }
+    :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+        caret-color: var(--color-blue);
+    }
+    ::selection {
+        color: var(--color-white);
+        background: var(--ui-highlight-strong);
+    }
+
+    // Consistent check/radio affordances in every view.
+    .base-checkbox {
+        border-color: var(--ui-outline-strong);
+        background: var(--ui-surface-soft);
+        transition: background-color var(--ui-duration), border-color var(--ui-duration);
+    }
+    .base-checkbox:hover, .base-radio:hover {
+        border-color: var(--color-blue);
+    }
+    .base-checkbox:checked {
+        border-color: var(--color-blue);
+        background: var(--ui-highlight);
+    }
+    .base-radio {
+        border-color: var(--ui-outline-strong);
+    }
+
+    // Scrollbars should recede until actually used.
+    .base-scrollbar::-webkit-scrollbar-thumb,
+    .base-scrollbar-big::-webkit-scrollbar-thumb,
+    .menu-content::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background-color: var(--ui-outline-strong);
+    }
+    .base-scrollbar::-webkit-scrollbar-track:hover,
+    .base-scrollbar-big::-webkit-scrollbar-track:hover {
+        background-color: transparent;
+    }
+
+    // Menus, dialogs and toasts share one elevation system.
+    .menu-box,
+    .msgbox-box,
+    .toastList .toastItem {
+        border: 1px solid var(--ui-outline-strong);
+        border-radius: var(--ui-radius-lg);
+        box-shadow: var(--ui-shadow);
+        background: var(--ui-surface);
+    }
+    .menu-box {
+        padding: 7px;
+        margin: 5px;
+    }
+    .menu-grid-item {
+        border-radius: var(--ui-radius-sm);
+        transition: background var(--ui-duration) ease;
+    }
+    .menu-grid-item:hover,
+    .menu-hor-item:hover {
+        background: var(--ui-surface-hover);
+    }
+    .menu-hor-item {
+        min-height: 35px;
+        border-radius: var(--ui-radius-sm);
+        padding-left: 9px;
+        transition: background var(--ui-duration) ease;
+    }
+    .menu-hor-title {
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: .04em;
+        color: var(--color-blue);
+        padding-top: 9px;
+        padding-bottom: 6px;
+    }
+    .menu-hor-hr,
+    .menu-grid-hr {
+        background-color: var(--ui-outline);
+    }
+    .menu-text,
+    .msgbox-input {
+        border: 1px solid var(--ui-outline-strong);
+        border-radius: var(--ui-radius-sm);
+        background: var(--ui-surface-soft);
+        color: var(--color-white);
+    }
+    .msgbox-box {
+        border-radius: var(--ui-radius-xl);
+        max-width: min(500px, calc(100vw - 32px));
+    }
+    .msgbox-txt {
+        line-height: 1.6;
+    }
+    .msgbox-btn {
+        min-height: 36px;
+        border: 1px solid var(--ui-outline);
+        border-radius: var(--ui-radius-sm);
+        background: var(--ui-surface-raised);
+        font-weight: 550;
+        transition: background var(--ui-duration), transform var(--ui-duration);
+    }
+    .msgbox-btn:hover {
+        background: var(--ui-surface-hover);
+    }
+    .msgbox-btn:active {
+        transform: scale(.98);
+    }
+    .toastList .toastItem {
+        border-radius: var(--ui-radius-md);
+    }
+    .toastList .toastText {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .toastList .toastClose {
+        min-width: 28px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .window-titlebar .titlebar-toolbar-btn,
+        .menu-grid-item, .menu-hor-item, .msgbox-btn, .base-checkbox {
+            transition: none;
+        }
+        .toastList .toastItem {
+            animation: none;
+        }
+    }
+}

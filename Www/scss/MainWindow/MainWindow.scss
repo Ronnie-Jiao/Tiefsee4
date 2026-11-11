@@ -14,6 +14,8 @@
 @use "./BulkView";
 @use "./VideoToolbar";
 @use "./Favorites";
+@use "../VisualFoundation" as foundation;
+@use "./VisualRefresh" as refresh;
 
 :root {
     //圖示粗細
@@ -317,3 +319,7 @@ body[fullScreen="true"][showTitlebar="true"] {
         top: 30px;
     }
 }
+
+// Visual refresh is emitted last to override legacy component styling.
+@include foundation.styles;
+@include refresh.styles;
