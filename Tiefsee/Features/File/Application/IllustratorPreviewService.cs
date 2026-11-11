@@ -104,6 +104,7 @@ public static class IllustratorPreviewService {
         Bitmap bitmap = new(width, height, PixelFormat.Format24bppRgb);
         BitmapData bits = bitmap.LockBits(new Rectangle(0, 0, width, height),
             ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+        bool completed = false;
         try {
             byte[] bgr = new byte[width * 3];
             for (int y = 0; y < height; y++) {
@@ -130,9 +131,11 @@ public static class IllustratorPreviewService {
                 }
                 Marshal.Copy(bgr, 0, IntPtr.Add(bits.Scan0, y * bits.Stride), bgr.Length);
             }
+            completed = true;
         }
         finally {
             bitmap.UnlockBits(bits);
+            if (!completed) bitmap.Dispose();
         }
         return bitmap;
     }
