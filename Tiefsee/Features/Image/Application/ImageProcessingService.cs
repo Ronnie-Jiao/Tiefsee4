@@ -82,6 +82,21 @@ public sealed class ImageProcessingService {
         bool isDirectory = Directory.Exists(path);
         if (isDirectory == false && File.Exists(path) == false) { return null; }
 
+        // PSD/PSB: a cached 1036 resource is much cheaper than asking a codec
+        // to decode all layers merely for a file-list thumbnail.
+        if (!isDirectory && IsPhotoshopDocument(path)) {
+            try {
+                string jpeg = GetPhotoshopThumbnailPath(path);
+                if (jpeg != null) {
+                    using Bitmap cached = new(jpeg);
+                    return new Bitmap(cached);
+                }
+            }
+            catch {
+                // The embedded resource is optional or corrupt; use Shell.
+            }
+        }
+
         try {
             return RunShellThumbnailWithTimeout(() => {
                 // 目錄要取 Shell 圖示；一般檔案維持既有的檔案總管縮圖流程。
@@ -103,6 +118,40 @@ public sealed class ImageProcessingService {
         catch { }
 
         return null;
+    }
+
+    private readonly object _photoshopThumbnailLock = new();
+
+    private static bool IsPhotoshopDocument(string path) {
+        string ext = Path.GetExtension(path);
+        return ext.Equals(".psd", StringComparison.OrdinalIgnoreCase) ||
+            ext.Equals(".psb", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Extract and cache a PSD/PSB embedded JPEG preview (if present).</summary>
+    private string GetPhotoshopThumbnailPath(string path) {
+        string cachePath = PathToImgProcessed(path, "ps-thumb-1036-v1", "jpg");
+        lock (_photoshopThumbnailLock) {
+            if (File.Exists(cachePath)) {
+                File.SetLastAccessTimeUtc(cachePath, DateTime.UtcNow);
+                return cachePath;
+            }
+            byte[] jpeg = PhotoshopThumbnailService.TryReadEmbeddedJpeg(path);
+            if (jpeg == null) return null;
+
+            string temporaryPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp.jpg";
+            try {
+                File.WriteAllBytes(temporaryPath, jpeg);
+                File.Move(temporaryPath, cachePath);
+            }
+            catch (IOException) when (File.Exists(cachePath)) {
+                // Parallel workers may already have cached the same document.
+            }
+            finally {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            return cachePath;
+        }
     }
 
     private readonly object _illustratorPreviewLock = new();
@@ -333,10 +382,27 @@ public sealed class ImageProcessingService {
                 DisableAutoBrightness = false
             }
         };
+        bool photoshopDocument = IsPhotoshopDocument(path);
+        if (photoshopDocument) {
+            // ImageMagick PSD coder skips reading layer frames when only
+            // merged scene 0 is requested and merged data is available.
+            settings.FrameIndex = 0;
+            settings.FrameCount = 1;
+        }
         MagickImage image = new MagickImage(path, settings);
 
         image.AutoOrient(); // 自動調整方向
-        image.SetProfile(ColorProfiles.SRGB); // 如果不是RGB格式的圖片，需要更多時間來轉檔
+        if (photoshopDocument && image.ColorSpace == ColorSpace.CMYK && image.GetColorProfile() == null) {
+            // Without an embedded ICC profile we cannot know the real CMYK
+            // working space. SWOP is a documented approximation, not proof
+            // of reference-accurate colors.
+            image.TransformColorSpace(ColorProfiles.USWebCoatedSWOP, ColorProfiles.SRGB);
+        }
+        else {
+            // With an embedded profile, SetProfile performs an ICC
+            // conversion to sRGB instead of simply relabeling CMYK bytes.
+            image.SetProfile(ColorProfiles.SRGB);
+        }
 
         if (image.ColorSpace == ColorSpace.RGB) { // 用於處理hdr圖片
             image.ColorSpace = ColorSpace.sRGB;
