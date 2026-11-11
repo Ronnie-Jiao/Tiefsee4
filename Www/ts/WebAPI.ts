@@ -370,6 +370,17 @@ export class WebAPI {
         return ret;
     }
 
+    /** Checks whether an AI document offers PDF content or a real bitmap preview. */
+    static async getIllustratorPreviewStatus(fileInfo2: FileInfo2): Promise<{
+        kind: "pdf" | "preview" | "unsupported";
+        path?: string;
+    }> {
+        const path = encodeURIComponent(fileInfo2.Path);
+        const fileTime = `LastWriteTimeUtc=${fileInfo2.LastWriteTimeUtc}`;
+        const url = APIURL + `/api/files/ai-preview-status?path=${path}&${fileTime}`;
+        return await Lib.sendApiGet("json", url);
+    }
+
     /**
      * 取得 pdf的網址
      */
