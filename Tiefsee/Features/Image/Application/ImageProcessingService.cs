@@ -105,6 +105,66 @@ public sealed class ImageProcessingService {
         return null;
     }
 
+    private readonly object _illustratorPreviewLock = new();
+
+    /// <summary>
+    /// Find a genuine thumbnail for a non-PDF Illustrator file. First prefer
+    /// an embedded legacy EPSI preview, then ask Windows Shell for ThumbnailOnly
+    /// (never IconOnly, to avoid displaying a generic AI icon as artwork).
+    /// Cached PNG names include file size and modification time.
+    /// </summary>
+    public string GetIllustratorPreviewPath(string path) {
+        if (!Path.GetExtension(path).Equals(".ai", StringComparison.OrdinalIgnoreCase) ||
+            !File.Exists(path)) return null;
+
+        string cachePath = PathToImgProcessed(path, "illustrator-preview-v1", "png");
+        lock (_illustratorPreviewLock) {
+            if (File.Exists(cachePath)) {
+                File.SetLastAccessTimeUtc(cachePath, DateTime.UtcNow);
+                return cachePath;
+            }
+
+            Bitmap preview = null;
+            try {
+                preview = IllustratorPreviewService.TryReadEpsiPreview(path);
+            }
+            catch (IOException) { }
+            catch (ArgumentException) { }
+            catch (OverflowException) { }
+            catch (OutOfMemoryException) { }
+
+            if (preview == null) {
+                try {
+                    preview = RunShellThumbnailWithTimeout(
+                        () => WindowsThumbnailProvider.GetThumbnail(
+                            path, 1024, 1024,
+                            ThumbnailOptions.ThumbnailOnly | ThumbnailOptions.ScaleUp), 3);
+                }
+                catch (TimeoutException) { }
+                catch (COMException) { }
+                catch (Exception) { }
+            }
+
+            if (preview == null) return null;
+            using (preview) {
+                string temporaryPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp.png";
+                try {
+                    preview.Save(temporaryPath, System.Drawing.Imaging.ImageFormat.Png);
+                    try {
+                        File.Move(temporaryPath, cachePath);
+                    }
+                    catch (IOException) when (File.Exists(cachePath)) {
+                        File.Delete(temporaryPath);
+                    }
+                    return cachePath;
+                }
+                finally {
+                    if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// 取得資料夾在 Windows Shell 中的內容縮圖；Shell 沒有提供縮圖時回退至一般資料夾圖示。
     /// </summary>
