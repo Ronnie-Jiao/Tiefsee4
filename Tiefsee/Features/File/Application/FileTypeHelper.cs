@@ -101,8 +101,10 @@ public class FileTypeHelper {
             else if (hex.StartsWith("4F 67 67 53")) { // 4F(O) 67(g) 67(g) 53(S)
                 return "ogv";
             }
-            else if (hex.StartsWith("38 42 50 53")) { // 38(8) 42(B) 50(P) 53(S)
-                return "psd";
+            else if (hex.StartsWith("38 42 50 53")) { // 8BPS: Photoshop document signature
+                // Version 1 is PSD, version 2 is PSB (Large Document Format).
+                // Both share the same first four bytes, so the version must be checked.
+                return hex.StartsWith("38 42 50 53 00 02") ? "psb" : "psd";
             }
         }
 
