@@ -26,10 +26,29 @@ public static class IllustratorPreviewService {
         ReadOnlySpan<byte> signature = "%PDF-"u8;
         // PDF readers permit a short header offset. Do not search arbitrary
         // embedded binary content or falsely classify PostScript files as PDF.
+        bool isPdfContainer = false;
         for (int i = 0; i <= Math.Min(length - signature.Length, 31); i++) {
-            if (buffer.Slice(i, signature.Length).SequenceEqual(signature)) return true;
+            if (buffer.Slice(i, signature.Length).SequenceEqual(signature)) {
+                isPdfContainer = true;
+                break;
+            }
         }
-        return false;
+        if (!isPdfContainer) return false;
+
+        // Some recent Illustrator files have a valid PDF container but its
+        // sole page is an Adobe notice instead of the artwork. Detect the
+        // common uncompressed notice; compressed/encoded variants still need
+        // a real PDF page renderer for definitive identification.
+        stream.Position = 0;
+        int sampleLength = (int)Math.Min(stream.Length, 1024 * 1024);
+        byte[] sample = new byte[sampleLength];
+        stream.ReadExactly(sample);
+        string ascii = Encoding.ASCII.GetString(sample);
+        if (ascii.Contains("saved without PDF Content", StringComparison.OrdinalIgnoreCase) &&
+            ascii.Contains("Create PDF Compatible File", StringComparison.OrdinalIgnoreCase)) {
+            return false;
+        }
+        return true;
     }
 
     /// <summary>
