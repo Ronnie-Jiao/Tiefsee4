@@ -12,6 +12,13 @@ try {
     File.WriteAllText(pdf, "%PDF-1.7\n1 0 obj\n<<>>\nendobj\n%%EOF", Encoding.ASCII);
     Assert(IllustratorPreviewService.HasPdfCompatibleContent(pdf), "PDF-compatible AI header");
 
+    string notice = Path.Combine(directory, "pdf-notice.ai");
+    File.WriteAllText(notice,
+        "%PDF-1.5\\nThis is an Adobe Illustrator File that was saved without PDF Content. " +
+        "Re-save with Create PDF Compatible File enabled.\\n%%EOF", Encoding.ASCII);
+    Assert(!IllustratorPreviewService.HasPdfCompatibleContent(notice),
+        "detect no-PDF Illustrator notice embedded inside PDF container");
+
     string noPdf = Path.Combine(directory, "legacy.ai");
     File.WriteAllText(noPdf,
         "%!PS-Adobe-3.0 EPSF-3.0\n%%BeginPreview: 2 1 1 1\n%80\n%%EndPreview\n",
