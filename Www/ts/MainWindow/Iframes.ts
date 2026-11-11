@@ -614,39 +614,60 @@ class Textview {
 class Pdfview {
     public visible;
     public loadFile;
+    public loadIllustratorFallback;
     public loadNone;
 
     constructor(M: MainWindow) {
-
-        const _domIframe = document.querySelector("#mView-pdf") as HTMLTextAreaElement;
+        const _domIframe = document.querySelector("#mView-pdf") as HTMLIFrameElement;
 
         this.visible = visible;
         this.loadFile = loadFile;
+        this.loadIllustratorFallback = loadIllustratorFallback;
         this.loadNone = loadNone;
 
-        /** 
-          * 顯示或隱藏dom
-          */
         function visible(val: boolean) {
-            if (val === true) {
-                _domIframe.style.display = "block";
-            } else {
-                _domIframe.style.display = "none";
-            }
+            _domIframe.style.display = val ? "block" : "none";
         }
 
-        /**
-         * 載入檔案
-         */
-        async function loadFile(fileInfo2: FileInfo2) {
-            const url = WebAPI.getPdf(fileInfo2);
-            _domIframe.setAttribute("src", url);
+        function loadFile(fileInfo2: FileInfo2) {
+            // A previous non-PDF AI may have supplied a srcdoc. Remove it
+            // before navigating back to the normal PDF document handler.
+            _domIframe.removeAttribute("srcdoc");
+            _domIframe.setAttribute("src", WebAPI.getPdf(fileInfo2));
         }
 
-        /**
-         * 清空內容
-         */
+        /** Display genuine bitmap fallback, or an explicit unsupported state. */
+        function loadIllustratorFallback(previewPath: string | null) {
+            _domIframe.removeAttribute("src");
+            const zh = navigator.language.toLowerCase().startsWith("zh");
+            const heading = previewPath
+                ? (zh ? "Illustrator 预览图" : "Illustrator bitmap preview")
+                : (zh ? "无法预览此 AI 文件" : "This AI file cannot be previewed");
+            const detail = previewPath
+                ? (zh ? "此文件不包含 PDF 兼容数据，目前显示的是内嵌或系统缩略图，可能低于原稿分辨率。"
+                      : "This file has no PDF-compatible data. The embedded or system preview may be lower resolution than the artwork.")
+                : (zh ? "文件没有 PDF 兼容数据，也未找到可用的缩略图。可在 Illustrator 中重新保存，并勾选“创建 PDF 兼容文件”。"
+                      : "No PDF-compatible data or usable thumbnail was found. Re-save in Illustrator with Create PDF Compatible File enabled.");
+            const escape = (value: string) => value
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            const image = previewPath
+                ? `<img alt="Illustrator preview" src="${escape(WebAPI.getFile(previewPath))}">`
+                : `<div class="glyph" aria-hidden="true">Ai</div>`;
+            _domIframe.srcdoc = `<!doctype html><html lang="${zh ? "zh" : "en"}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;min-height:100%;height:100%;font:14px/1.6 "Segoe UI",sans-serif;background:#1c2229;color:#e9edf3}
+.page{height:100%;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px}
+img{display:block;max-width:100%;max-height:calc(100% - 118px);min-height:0;object-fit:contain;box-shadow:0 12px 46px #0005;border-radius:5px}
+.glyph{display:grid;place-items:center;width:76px;height:76px;background:#2e241f;color:#f6a85b;border:1px solid #775039;border-radius:20px;font-weight:700;font-size:32px}
+h1{margin:0;font-size:16px;font-weight:600}p{margin:0;max-width:550px;text-align:center;color:#aab5c4;font-size:12px}
+</style></head><body><main class="page">${image}<div><h1 style="text-align:center">${escape(heading)}</h1>
+<p>${escape(detail)}</p></div></main></body></html>`;
+        }
+
         function loadNone() {
+            _domIframe.removeAttribute("srcdoc");
             _domIframe.setAttribute("src", "");
         }
     }
