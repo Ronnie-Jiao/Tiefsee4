@@ -299,6 +299,15 @@
         color: var(--color-white80);
     }
 
+    // Fullscreen's legacy hidden offset assumes a shorter toolbar.
+    // Keep the enlarged toolbar fully off-screen until hover reveals it.
+    body[fullScreen="true"] .main-T {
+        top: -48px;
+    }
+    body[fullScreen="true"][showTitlebar="true"] .main-T {
+        top: 30px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .main-toolbar-btn,
         .main-fileList .fileList-item,
